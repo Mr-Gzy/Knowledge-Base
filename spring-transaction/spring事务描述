@@ -1,0 +1,44 @@
+spring事务是在数据库的事务的基础上进行封装扩展  其主要特性：
+1、支持原有的数据事务的隔离级别
+2、加入了事务的传播的概念，提供了多个事务的合并或隔离的功能
+3、提供声明式事务，让业务代码与事务分离，事务变得更易用。
+怎么样使用事务，spring提供了三个接口供使用事务：
+Ⅰ、TransactionDefinition的五个方法：Definition：定义、解释
+   1)int getPropagationBehavior();获取传播行为；默认的传播行为：PROPAGATION_REQUIRED
+      七种传播行为： mandatory：/ˈmændətəri; mænˈdeɪtəri/强制的 强制性 命令的
+        int PROPAGATION_REQUIRED = 0;//必须的事务 如果当前没有事物，就新建一个事物，如果已经存在一个事物中，加入到这个事物中。这是最常见的选择。
+        int PROPAGATION_SUPPORTS = 1;//支持事务 支持当前事物，如果当前没有事物，就以非事物方式执行。
+        int PROPAGATION_MANDATORY = 2;//强制使用事务 使用当前的事物，如果当前没有事物，就抛出异常。
+        int PROPAGATION_REQUIRES_NEW = 3;//创建新的事务 新建事物，如果当前存在事物，把当前事物挂起。
+        int PROPAGATION_NOT_SUPPORTED = 4;//不支持事务 以非事物方式执行操作，如果当前存在事物，就把当前事物挂起。
+        int PROPAGATION_NEVER = 5;//从不使用事务 以非事物方式执行，如果当前存在事物，则抛出异常。
+        int PROPAGATION_NESTED = 6;//嵌套事务 如果当前存在事物，则在嵌套事物内执行。如果当前没有事物，则执行与PROPAGATION_REQUIRED类似的操作。
+   2)int getIsolationLevel()；获取隔离级别：
+        使用底层数据存储的默认隔离级别。所有其他级别都对应JDBC隔离级别。int ISOLATION_DEFAULT = -1;
+        读未提交:int ISOLATION_READ_UNCOMMITTED = 1;  // same as java.sql.Connection.TRANSACTION_READ_UNCOMMITTED;
+        读已提交:int ISOLATION_READ_COMMITTED = 2;  // same as java.sql.Connection.TRANSACTION_READ_COMMITTED;
+        可重复读:int ISOLATION_REPEATABLE_READ = 4;  // same as java.sql.Connection.TRANSACTION_REPEATABLE_READ;
+        串行化:int ISOLATION_SERIALIZABLE = 8;  // same as java.sql.Connection.TRANSACTION_SERIALIZABLE;
+        解决了脏读、幻读、不可重复读的问题
+   3)int getTimeout：获取超时时间
+   4)boolean isReadOnly()；//是否是只读事务
+   5)String getName()//获取事务的名称
+Ⅱ、PlatformTransactionManager：事务管理
+  1)TransactionStatus getTransaction(@Nullable TransactionDefinition definition)
+  2)void commit(TransactionStatus status) throws TransactionException;
+  3)void rollback(TransactionStatus status) throws TransactionException;
+Ⅲ、TransactionStatus：
+  用于手动编写事务时操作事务
+  public interface TransactionStatus extends TransactionExecution, SavepointManager, Flushable {
+  它本身有两个方法：
+   1)boolean hasSavepoint();
+   2)@Override重写了flush方法
+     	void flush();
+  同时它继承了父类的方法，实现细节的操作。
+  }
+ 在两个方法中加入或不加入事务，在测试用例中测试两个方法
+在createUser方法中不添加事务，在addAccount(异常)中添加事务required，结果：createUser方法插入成功，addAccount添加不成功
+在createUser方法中添加事务required，在addAccount(异常)中不添加事务，结果：createUser方法插入不成功，addAccount添加不成功
+在createUser方法中添加事务required，在addAccount(异常)中添加事务not_supported，结果：createUser方法插入不成功，addAccount添加成功
+在createUser方法中添加事务required，在addAccount(异常)中添加事务required_new，结果：createUser方法插入不成功，addAccount添加不成功
+在createUser(异常)方法中添加事务required，在addAccount中添加事务required_new，结果：createUser方法插入不成功，addAccount添加成功

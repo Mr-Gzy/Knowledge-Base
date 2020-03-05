@@ -1,0 +1,15 @@
+CREATE TABLE `account` (
+  `id` int(11) NOT NULL AUTO_INCREMENT comment '主键',
+  `accountName` varchar(255) COLLATE utf8_bin NOT NULL comment '账户名称',
+  `user` varchar(255) COLLATE utf8_bin NOT NULL comment '用户',
+  `money` int(11) NOT NULL comment '金额',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8 COLLATE=utf8_bin comment '账户表';
+
+CREATE TABLE `user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT comment '主键',
+  `name` varchar(255) COLLATE utf8_bin NOT NULL comment '用户名称',
+  `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP comment '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8 COLLATE=utf8_bin comment '用户表';
+
