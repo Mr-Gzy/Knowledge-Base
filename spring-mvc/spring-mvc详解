@@ -1,0 +1,17 @@
+SpringMVC具体的执行流程:
+Spring MVC的Control主要由HandlerMapping和HandlerAdapter两个组件提供。
+
+一个请求从浏览器发到服务端到达tomcat也即Servlet容器，在到达DispatcherServlet基于URL去查找对应的HandlerMapping
+
+HandlerMapping==>找到对应的handler(HandlerExecutionChain)
+
+HandlerAdapter==>找到对应的adapter适配器，调用Handler执行目标方法返回ModelAndView
+
+如果出现了异常
+HandlerExceptionResolver ==>处理异常 返回error的ModelAndView
+如果需要处理拦截逻辑
+HandlerInterceptor ==>处理拦截逻辑
+
+视图ViewResolver ==>视图仓库 基于ViewName找到对应的View
+
+View ==> reader()解析生成HTML
