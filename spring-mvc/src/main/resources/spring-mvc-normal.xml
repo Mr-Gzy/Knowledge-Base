@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--    http://localhost:8080/yuxin  基于ioc name中以"/"开头的Bean时，默认加载所需要的组件，不需要配置BeanNameUrlHandlerMapping-->
+    <bean id="/yuxin"  class="com.yuxin.mvc.controller.BeanNameController"/>
+
+    <!--    http://localhost:8080/yuxin.do-->
+    <bean name="/yuxin.do" class="com.yuxin.mvc.controller.ServletController"/>
+    <!--    没有配置适配器报错：javax.servlet.ServletException: No adapter for handler [com.yuxin.mvc.controller.BeanNameController@6adc5abf]: The DispatcherServlet configuration needs to include a HandlerAdapter that supports this handler-->
+    <bean class="org.springframework.web.servlet.handler.SimpleServletHandlerAdapter"/>
+</beans>
