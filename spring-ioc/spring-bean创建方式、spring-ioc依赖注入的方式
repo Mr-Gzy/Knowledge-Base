@@ -1,0 +1,211 @@
+一、实体bean的构建
+1、基于ClassName构建
+   <bean class="com.yuxin.spring.HelloSpring"></bean>其原理是在spring底层会基于class 属性 通过反射进行构建。
+2、指定的构造方法构建
+   <bean class="com.yuxin.spring.HelloSpring">
+       <constructor-arg name="name" type="java.lang.String" value="yuxin"/>
+       <constructor-arg index="1" type="java.lang.String" value="sex" />
+   </bean>
+   如果需要基于参数进行构建，就采用构造方法构建，其对应属性如下：
+   name:构造方法参数变量名称
+   type:参数类型
+   index:参数索引，从0开始
+   value:参数值，spring 会自动转换成参数实际类型值
+   ref:引用容串的其它对象
+3、静态工厂方法创建 factory-method
+   <bean class="com.yuxin.spring.HelloSpring" factory-method="build">
+       <constructor-arg name="type" type="java.lang.String" value="B"/>
+   </bean>
+   如果你正在对一个对象进行A/B测试 ，就可以采用静态工厂方法的方式创建，其于策略创建不同的对像或填充不同的属性。
+   该模式下必须创建一个静态工厂方法，并且方法返回该实例，spring 会调用该静态方法创建对象。
+   public static HelloSpring build(String type) {
+       if (type.equals("A")) {
+           return new HelloSpring("yuxin", "man");
+       } else if (type.equals("B")) {
+           return new HelloSpring("yuxin", "woman");
+       } else {
+           throw new IllegalArgumentException("type must A or B");
+       }
+   }
+4、FactoryBean创建
+   <bean class="com.yuxin.spring.YuXinFactoryBean" id="helloSpring"></bean>
+   指定一个Bean工厂来创建对象，对象构建初始化 完全交给该工厂来实现。配置Bean时指定该工厂类的类名。
+
+   public class YuXinFactoryBean implements FactoryBean {
+       @Override
+       public Object getObject() throws Exception {
+           return new HelloSpring();
+       }
+       @Override
+       public Class<?> getObjectType() {
+           return HelloSpring.class;
+       }
+       @Override
+       public boolean isSingleton() {
+           return false;
+       }
+   }
+二、bean的基本特性
+  * 作用范围
+  * 生命周期
+  * 装载机制
+a、作用范围
+很多时候Bean对象是无状态的 ，而有些又是有状态的 无状态的对象我们采用单例即可，而有状态则必须是多例的模式，通过scope 即可创建
+   scope=“prototype”
+   scope=“singleton”
+   如下：
+   scope=“prototype
+   <bean class="com.yuxin.spring.HelloSpring" scope="prototype">
+   </bean>
+   如果一个Bean设置成 prototype 我们可以 通过BeanFactoryAware 获取 BeanFactory 对象即可每次获取的都是新对像。
+b、生命周期
+   Bean对象的创建、初始化、销毁即是Bean的生命周期。通过 init-method、destroy-method
+   属性可以分别指定期构建方法与初始方法。
+   <bean class="com.yuxin.spring.HelloSpring" init-method="init" destroy-method="destroy"></bean>
+   也可以是：
+   让Bean去实现 InitializingBean.afterPropertiesSet()、DisposableBean.destroy()方法。分别对应 初始和销毁方法
+c、加载机制
+  指示Bean在何时进行加载。设置lazy-init 即可，其值如下：
+    true: 懒加载，即延迟加载
+    false:非懒加载，容器启动时即创建对象
+    default:默认，采用default-lazy-init 中指定值，如果default-lazy-init  没指定就是false
+
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+   default-lazy-init="true">
+
+  什么时候使用懒加载？
+    懒加载会容器启动的更快，而非懒加载可以容器启动时更快的发现程序当中的错误,推荐非懒加载。
+三、依赖注入
+ IOC依赖注入，DI反转控制是依赖注入的实现。如下几种方式注入：
+  set方法注入
+  构造方法注入
+  自动注入(byName、byType）
+  方法注入(lookup-method)
+1.set方法注入：
+  <bean class="com.yuxin.spring.HelloSpring">
+     <property name="fine" ref="fineSpring"/>
+  </bean>
+
+2.构造方法注入：
+  <bean class="com.yuxin.spring.HelloSpring">
+     <constructor-arg name="fine">
+       <bean class="com.yuxin.spring.fineSpring"/>
+     </constructor-arg>
+  </bean>
+
+3.自动注入(byName\byType\constructor)
+   <bean id="helloSpringAutowireConstructor"
+   class="com.yuxin.spring.HelloSpring" autowire="byName">
+   </bean>
+byName：基于变量名与bean 名称相同作为依据插入
+byType：基于变量类别与bean 名称作
+constructor：基于IOC中bean 与构造方法进行匹配（语义模糊，不推荐)
+
+4.依赖方法注入(lookup-method)
+当一个单例的Bean，依赖于一个多例的Bean，用常规方法只会被注入一次，如果每次都想要获取一个全新实例就可以采用lookup-method 方法来实现。
+   #编写一个抽像类
+   public abstract class MethodInject {
+       public void handlerRequest() {
+         // 通过对该抽像方法的调用获取最新实例
+           getFine();
+       }
+       # 编写一个抽像方法
+       public abstract FineSpring getFine();
+   }
+   // 设定抽像方法实现
+   <bean id="MethodInject" class="com.tuling.spring.MethodInject">
+       <lookup-method name="getFine" bean="fine"></lookup-method>
+   </bean>
+   该操作的原理是基于动态代理技术，重新生成一个继承至目标类，然后重写抽像方法到达注入目的。
+   单例Bean依赖多例Bean这种情况也可以通过实现 ApplicationContextAware 、BeanFactoryAware 接口来获取BeanFactory实例，
+   从而可以直接调用getBean方法获取新实例，推荐使用该方法，相比lookup-method语义逻辑更清楚一些
+
+四、IOC设计原理与实现
+Ⅰ、Bean工厂是如何生产Bean的？
+    简单讲spring.xml文件中保存了我们对Bean的描述配置，BeanFactory会读取这些配置然后生成对应的Bean。
+ 深入详解：
+  Bean的构建过程：
+   1)BeanDefinition
+     Ioc实现中,在xml中对Bean描述信息最后都保存在BeanDefinition对象中，XML中Bean属性与BeanDefinition对象是成一一对应。
+      class-->beanClassName
+      scope-->scope
+      lazy-init-->lazyInit
+      constructor-arg-->ConstructorArgument
+      property-->MutablePropertyValues
+      factory-method-->factoryMethodName
+      destroy-method-->AbstractBeanDefinition.destroyMethodName
+      init-method-->AbstractBeanDefinition.initMethodName
+      autowire-->AbstractBeanDefinition.autowireMethod
+
+      id属性是自定义的名称，但是它与类的名称一般相同，全局唯一性。ID其作为当前Bean的存储key注册到了BeanDefinitionRegistry 注册器中。
+      name一般是类的属性，用value来设置它的值。name作为别名key注册到了AliasRegistry注册中心。它俩最后都是指向其对应的BeanDefinition
+   2)BeanDefinitionRegistry(Bean注册器)
+   3)BeanDefinitionReader(Bean定义读取)
+       loadBeanDefinitions(Resource resource)
+          基于资源装载Bean定义并注册至注册器
+       int loadBeanDefinitions(String location)
+          基于资源路径装载Bean定义并注册至注册器
+       BeanDefinitionRegistry getRegistry()
+          获取注册器
+       ResourceLoader getResourceLoader()
+          获取资源装载器
+ Bean的定义是由BeanDefinitionReader 从xml 中读取配置并构建出 BeanDefinitionReader,然后在基于别名注册到BeanDefinitionRegister中。
+    演示BeanDefinitionReader装载过程：
+       //创建一个简单注册器
+       BeanDefinitionRegistry register = new SimpleBeanDefinitionRegistry();
+       //创建bean定义读取器
+       BeanDefinitionReader reader = new XmlBeanDefinitionReader(register);
+       // 创建资源读取器
+       DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
+       // 获取资源
+       Resource xmlResource = resourceLoader.getResource("spring.xml");
+       // 装载Bean的定义
+       reader.loadBeanDefinitions(xmlResource);
+       // 打印构建的Bean 名称
+       System.out.println(Arrays.toString(register.getBeanDefinitionNames());
+   4)BeanFactory 在ioc当中Bean的构建是由BeanFactory 负责的
+       ① getBean(String):基于ID或name 获取一个Bean
+       ② <T> T getBean(Class<T> requiredType) 
+         基于Bean的类别获取一个Bean（如果出现多个该类的实例，将会报错。但可以指定 primary=“true” 调整优先级来解决该错误 ）
+       ③ Object getBean(String name, Object... args)
+         基于名称获取一个Bean，并覆盖默认的构造参数
+       ④ boolean isTypeMatch(String name, Class<?> typeToMatch)
+         指定Bean与指定Class 是否匹配
+      当用户调用getBean的时候就会触发 Bean的创建动作，其是如何创建的呢？
+      示例：
+         #创建Bean堆栈
+         // 其反射实例化Bean
+         java.lang.reflect.Constructor.newInstance(Unknown Source:-1)
+         BeanUtils.instantiateClass()
+         //基于实例化策略 实例化Bean
+         SimpleInstantiationStrategy.instantiate()
+         AbstractAutowireCapableBeanFactory.instantiateBean()
+         // 执行Bean的实例化方法
+         AbstractAutowireCapableBeanFactory.createBeanInstance()
+         AbstractAutowireCapableBeanFactory.doCreateBean()
+         // 执行Bean的创建
+         AbstractAutowireCapableBeanFactory.createBean()
+         // 缓存中没有，调用指定Bean工厂创建Bean
+         AbstractBeanFactory$1.getObject()
+         // 从单例注册中心获取Bean缓存
+         DefaultSingletonBeanRegistry.getSingleton()
+         AbstractBeanFactory.doGetBean()
+         // 获取Bean
+         AbstractBeanFactory.getBean()
+         // 调用的客户类
+         com.yuxin.spring.BeanFactoryExample.main()
+   从调用过程可以总结出以下几点：
+   1. 调用BeanFactory.getBean() 会触发Bean的实例化。
+   2. DefaultSingletonBeanRegistry 中缓存了单例Bean
+   3. Bean的创建与初始化是由AbstractAutowireCapableBeanFactory 完成的。
+
+Ⅱ、Bean的依赖关系是有谁来决定的？
+   AbstractAutowireCapableBeanFactory
+Ⅲ、Bean工厂和ApplicationContext的区别？
+    ApplicationContext 它由BeanFactory接口派生而来，因而提供了BeanFactory所有的功能。除此之外context包还提供了以下的功能：
+   1. MessageSource, 提供国际化的消息访问
+   2. 资源访问，如URL和文件
+   3. 事件传播，实现了ApplicationListener接口的bean
+   4. 载入多个（有继承关系）上下文 ，使得每一个上下文都专注于一个特定的层次，比如应用的web层

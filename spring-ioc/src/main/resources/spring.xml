@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- A simple bean definition -->
+    <!--    <bean id="..." class="...">-->
+    <!--  collaborators and configuration for this bean go here &ndash;&gt;-->
+    <!--    </bean>-->
+
+    <!--  A bean definition with lazy init set on-->
+    <!--    <bean id="..." class="..." lazy-init="true">-->
+    <!--  collaborators and configuration for this bean go here -->
+    <!--    </bean>-->
+
+    <!--  A bean definition with initialization method -->
+    <!--    <bean id="..." class="..." init-method="...">-->
+    <!--   collaborators and configuration for this bean go here -->
+    <!--    </bean>-->
+
+    <!--   A bean definition with destruction method -->
+    <!--    <bean id="..." class="..." destroy-method="...">-->
+    <!--   collaborators and configuration for this bean go here -->
+    <!--    </bean>-->
+
+    <!--默认构造函数构建-->
+<!--     <bean class="com.yuxin.spring.HelloSpring"></bean>-->
+    <!--指定构造函数构建-->
+<!--     <bean class="com.yuxin.spring.HelloSpring">-->
+<!--       <constructor-arg name="name" type="java.lang.String" value="dream"/>-->
+<!--       <constructor-arg index="1" type="java.lang.String" value="1"/>-->
+<!--     </bean>-->
+
+    <!--基于静态工厂方法构建-->
+     <bean class="com.yuxin.dream.spring.HelloSpring" factory-method="build">
+         <constructor-arg name="type" value="A"/>
+     </bean>
+
+    <bean id="driver" class="com.yuxin.dream.spring.DriverFactoryBean">
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306"></property>
+    </bean>
+</beans>
