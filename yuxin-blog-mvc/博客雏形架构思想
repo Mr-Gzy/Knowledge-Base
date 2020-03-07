@@ -1,0 +1,44 @@
+框架环境：
+jdk1.6以上
+依赖的jar包：spring freemarker java-servlet-api
+
+框架流程:
+1、处理url映射与control的关系(一一对应的关系)，control控制器(四种控制器)在springMVC中是有多种状态的，
+   这里就用@McvMapping，还有它对应的method(反射用对应的方法)。
+   初始化操作流程：
+     基于spring的ApplicationContext去遍历所有的BeanType，
+     查找到class类里所对应的方法上的@MvcMapping注解。
+     把它封装成一个MvcBean(相当于springMVC中的handler)用于调用Control方法，
+     基于url做为key保存到内存中。
+   http调用流程：
+     基于Servlet(DispatcherServlet)获取到http请求,本节用HandlerServlet。
+     获取Url路径，去MvcBeanFactory当中查找MvcBean,这样就能够获取到Bean里参数名称与类型。
+     基于方法的参数变量名称和类型去封装转换其对应的参数，
+     基于MvcBean,调用Controller方法，
+     基于返回的View，调用视图解析器
+ 实现组件：
+    FreemarkerView   freemarker视图
+    HandlerServlet  请求参数封装，请求转发
+    MvcBeanFactory  MvcBean工厂，从spring ioc容器中扫描装在MvcBean
+    MVCBean         Mvc业务执行
+    MVCMapping      Mvc注解，用于注解MVCBean，并配置url路径
+
+ MvcBean时序图：
+  HandlerServlet：
+    1、init():它是ioc容器在初始化的时候调用，
+    2、去ApplicationContext获取Bean mvcBeanFactory，获取到直接返回。
+  MvcBeanFactory：
+    3、如果context返回空则自动构建Factory,
+    4、遍历ioc beans，查找含有@Mvcmapping注解的方法
+    5、封装Bean，基于@MvcMapping 注解封装mvcBean
+  ApplicationContext：上下文
+请求时序图：
+  1、当用户从浏览器browser发起http请求,通过get发送到HandlerServlet，而HandlerServlet是一个普通的Servlet方法，
+     它继承了HttpServlet，在web.xml配置文件中封装了handlerServlet,请求映射是"/"拦截所有请求
+  2、获取到请求后，基于请求对用的url地址，去查找到MvcBeanFactory，查找到对应的MvcBean
+  3、buildParams构建参数
+  4、excute执行Controller方法，返回View(也即ModelAndView)
+  5、processResult类型的转化
+  6、response给用户一个Html视图
+
+FreeMarker文件后续补交。
