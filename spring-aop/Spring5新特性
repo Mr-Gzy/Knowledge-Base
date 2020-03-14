@@ -1,0 +1,8 @@
+1 使用 lambda表达式定义bean
+
+2 日志 spring4的日志是用jcl,原生的JCL,底层通过循环去加载具·体的日志实现技术,所以有先后顺序,
+  spring5利用的是spring-jcl,其实就是spring自己改了JCL的代码
+  spring应用的是jcl，但打印的是Jul，jcl是一个面向抽象的日志的标准，它提供了打印日志的API，但是是由jul去实现的。
+  在项目中依赖了log4j，但是在控制台输出没有用到log4j的日志格式输出，所以在spring5中没有用到。
+
+
