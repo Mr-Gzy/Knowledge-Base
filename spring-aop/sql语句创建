@@ -1,0 +1,24 @@
+CREATE table `music`(
+id INT(11) auto_increment NOT NULL COMMENT '主键',
+`name` VARCHAR(32) NOT NULL COMMENT '姓名',
+`singer` VARCHAR(32) NOT NULL COMMENT '歌手',
+`cover` VARCHAR(255) NOT NULL COMMENT '封面名称',
+`lrc` VARCHAR(500) NOT NULL COMMENT '歌词lyric/ˈlɪrɪk/',
+`album` VARCHAR(255) NOT NULL COMMENT '唱片集名称/ˈælbəm/',
+PRIMARY key(`id`)
+)ENGINE=INNODB COLLATE=utf8_general_ci COMMENT '音乐';
+
+INSERT INTO music(`name`,`singer`,`cover`,`lrc`,`album`)VALUES("张学友","香港男歌手","吻别","
+我和你吻别在狂乱的夜,
+我的心 等着迎接伤悲,
+我和你吻别在无人的街,
+让风痴笑我不能拒绝,
+我和你吻别在狂乱的夜,
+我的心 等着迎接伤悲","吻别");
+INSERT INTO music(`name`,`singer`,`cover`,`lrc`,`album`)VALUES("刘德华","香港男歌手","爱你一万年","
+爱你一万年,
+爱你经得起考验,
+飞越了时间的局限,
+拉近地域的平面,
+紧紧的相连","刘德华 99演唱会");
+INSERT INTO music(`name`,`singer`,`cover`,`lrc`,`album`)VALUES("刘欢","内地流行乐男歌唱家、原创音乐人、音乐教育家","弯弯的月亮","弯弯的月亮","蒙古小夜曲");
