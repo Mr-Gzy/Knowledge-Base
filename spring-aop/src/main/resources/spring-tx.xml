@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/tx
+       https://www.springframework.org/schema/tx/spring-tx.xsd">
+    <aop:config>
+        <aop:pointcut id="businessService"
+                      expression="execution(* com.yuxin.dream.dao.*.*(..))"/>
+        <aop:advisor
+                pointcut-ref="businessService"
+                advice-ref="tx-advice"/>
+         </aop:config>
+
+        <tx:advice id="tx-advice" transaction-manager="transactionManager">
+            <tx:attributes>
+                <!--所有方法都添加事务-->
+                <tx:method name="*" propagation="REQUIRED"/>
+               <!--本测试中的方法是query()不是add(),所以query()没有添加事务，自动提交，所以能插入数据到数据库-->
+<!--                <tx:method name="add" propagation="REQUIRED"/>-->
+            </tx:attributes>
+        </tx:advice>
+</beans>
