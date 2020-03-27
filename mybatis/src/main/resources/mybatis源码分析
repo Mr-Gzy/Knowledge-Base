@@ -9,7 +9,7 @@ MappedStatement 底层封装对象 作用：对操作数据库存储封装，包
 StatementHandler 具体操作数据库相关的 handler 接口
 ResultSetHandler 具体操作数据库返回结果的 handler 接口
 
-1、通过ClassLoader的加载方式把配置文件以流的方式加载到内存中   加载
+1、通过ClassLoader的加载方式把配置文件以流的方式加载到内存中   加载到内存
   源码:
    public static InputStream getResourceAsStream(String resource) throws IOException {
        return getResourceAsStream(null, resource);
@@ -112,4 +112,5 @@ testMapper()获取mapper：
          >org.apache.ibatis.session.Configuration.addMapper
           >org.apache.ibatis.builder.xml.XMLConfigBuilder.mapperElement  mybatis-config.xml文件中的mapper的四种配置方式的判断
 
-SqlSessionFactoryBuilder----(parse解析)--->Configuration----(build)--->SqlSessionFactory---(openSession)--->SqlSession---(query)--->Executor--->(newStatementHandler)--->statementHandler---(handlerResultSet)--->ResultSetHandler
+SqlSessionFactoryBuilder----(parse解析)--->Configuration----(build)--->SqlSessionFactory---(openSession)
+ --->SqlSession---(query)--->Executor--->(newStatementHandler)--->statementHandler---(handlerResultSet)--->ResultSetHandler
