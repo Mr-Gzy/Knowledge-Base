@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 引入外部配置文件 -->
+    <properties resource="db.properties"/>
+<!--        <settings>-->
+<!--            &lt;!&ndash;开启mybatis二级缓存、log4j等，设置mybatis的运行时的行为&ndash;&gt;-->
+<!--            <setting name="cacheEnabled" value="true"/>-->
+<!--        </settings>-->
+
+    <!--类型别名对象-->
+    <!--    <typeAliases>-->
+    <!--        <typeAlias type="com.yuxin.dream.mybatis.bean.User" alias="user"></typeAlias>-->
+    <!--    </typeAliases>-->
+
+    <plugins>
+        <plugin interceptor="com.yuxin.dream.mybatis.plugin.SqlPrintInterceptor"/>
+    </plugins>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED"><!--连接池-->
+                <property name="driver" value="${driver}"/><!-- 驱动类型 -->
+                <property name="url" value="${url}"/> <!-- 连接字符串 -->
+                <property name="username" value="${username}"/><!-- 用户名 -->
+                <property name="password" value="${password}"/><!-- 密码 -->
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <!--四种配置方式-->
+        <!-- 在MybatisTest1中test()方法 -->
+<!--        <mapper resource="mybatis/TestUserMapper.xml"/>-->
+
+        <!--在MybatisTest1中testMapper()方法-->
+<!--        <mapper class="com.yuxin.dream.mybatis.mapper.UserMapper"/>-->
+        <!--<mapper resource="mybatis/TestUserMapper.xml"/>-->
+
+        <!-- 测试MybatisTest2-->
+        <mapper resource="mybatis/UserMapper.xml"/>
+
+        <!--基于全局的配置，它是通过字节的方式去Reader，在console控制台打印会出现乱码问题-->
+        <!--<package name="com.yuxin.dream.mybatis.mapper"/>-->
+
+         <!--基于绝对路径的配置-->
+         <!--<mapper url=""></mapper>-->
+
+    </mappers>
+</configuration>
+
+<!--  mappers四种配置方式-->
+<!--        1.package name="映射文件所在包名"-->
+<!--        必须保证接口名（例如IUserDao）和xml名（IUserDao.xml）相同，还必须在同一个包中-->
+
+<!--        例如：<package name="com.mybatis.dao"/>-->
+
+<!--        2.mapper resource=""-->
+<!--        不用保证同接口同包同名-->
+
+<!--        例如：<mapper resource="com/mybatis/mappers/EmployeeMapper.xml"/>-->
+
+<!--        3.mapper class="接口路径"-->
+<!--        保证接口名（例如IUserDao）和xml名（IUserDao.xml）相同，还必须在同一个包中-->
+
+<!--        例如：<mapper class="com.mybatis.dao.EmployeeMapper"/>-->
+
+<!--        4.mapper url="文件路径名" 不推荐-->
+<!--        引用网路路径或者磁盘路径下的sql映射文件 file:///var/mappers/AuthorMapper.xml-->
+
+<!--        例如：<mapper url="file:E:/Study/myeclipse/_03_Test/src/cn/sdut/pojo/PersonMapper.xml"/>-->
+
