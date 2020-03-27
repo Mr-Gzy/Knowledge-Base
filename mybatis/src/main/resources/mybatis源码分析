@@ -1,0 +1,115 @@
+mybatis 核心概念
+Configuration、SqlSessionFactory、Session、Executor、MappedStatement、StatementHandler、 ResultSetHandler
+
+Configuration 管理 mysql-config.xml 全局配置关系类
+SqlSessionFactory Session 管理工厂接口
+Session SqlSession 是一个面向用户（程序员）的接口。SqlSession 中提 供了很多操作数据库的方法
+Executor 执行器是一个接口（基本执行器、缓存执行器） 作用：SqlSession 内部通过执行器操作数据库
+MappedStatement 底层封装对象 作用：对操作数据库存储封装，包括 sql 语句、输入输出参数
+StatementHandler 具体操作数据库相关的 handler 接口
+ResultSetHandler 具体操作数据库返回结果的 handler 接口
+
+1、通过ClassLoader的加载方式把配置文件以流的方式加载到内存中   加载
+  源码:
+   public static InputStream getResourceAsStream(String resource) throws IOException {
+       return getResourceAsStream(null, resource);
+   }
+  public static InputStream getResourceAsStream(ClassLoader loader, String resource) throws IOException {
+      InputStream in = classLoaderWrapper.getResourceAsStream(resource, loader);
+      if (in == null) {
+        throw new IOException("Could not find resource " + resource);
+      }
+      return in;
+    }
+2、返回SqlSessionFactory,   解析
+    >org.apache.ibatis.session.SqlSessionFactoryBuilder.build(java.io.InputStream)通过工厂去构建
+         >org.apache.ibatis.builder.xml.XMLConfigBuilder 创建构造函数，构建数据源，环境、属性，然后去解析创建数据源，返回解析过路径的数据源文件的合法性
+           >org.apache.ibatis.builder.xml.XMLConfigBuilder.parse 然后再去解析xml文件内容
+             >org.apache.ibatis.builder.xml.XMLConfigBuilder.parseConfiguration  调用parseConfiguration方法真正去解析mybatis-config.xml配置文件内容
+              >org.apache.ibatis.parsing.XPathParser.evalNode(java.lang.String)
+               >org.apache.ibatis.parsing.XPathParser.evalNode(java.lang.Object, java.lang.String)  评估每个节点上的标签
+                 >org.apache.ibatis.parsing.XPathParser.evaluate 解析所有的xml文件的内容
+                   >javax.xml.xpath.XPath.evaluate(java.lang.String, java.lang.Object, javax.xml.namespace.QName)这里是xpath接口里的方法
+                    以上四个方法都是parseConfiguration调用来解析mybatis-config.xml文件的内容的，而在配置文件中只有环境的配置与mappers的配置，下面是解析mappers的
+                   >org.apache.ibatis.builder.xml.XMLConfigBuilder.mapperElement在这里通过循环遍历的方式来判断具体配置文件里运用到了那种方式。（总共有四种方式来配置mappers）
+                    最终返回configuration,并把它以参数的形式传入到DefaultSqlSessionFactory方法中进行赋值
+    >org.apache.ibatis.session.SqlSessionFactoryBuilder.build(org.apache.ibatis.session.Configuration)通过build的方法，返回DefaultSqlSessionFactory
+      >org.apache.ibatis.session.defaults.DefaultSqlSessionFactory.DefaultSqlSessionFactory
+       //源码：
+          public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
+            try {
+              XMLConfigBuilder parser = new XMLConfigBuilder(inputStream, environment, properties);
+              //在build中的parser方法会返回configuration。再调用build方法，返回DefaultSqlSessionFactory,里面的方法运用到了建造者模式.
+                DefaultSqlSessionFactory是SqlSessionFactory的实现类
+              return build(parser.parse());
+            } catch (Exception e) {
+             ...异常处理
+            } finally {
+             ...最终返回的信息
+            }
+          }
+3 通过SqlSessionFactory调用openSession()获取到SqlSession，进行对执行器的初始化SimpleExecutor
+    >org.apache.ibatis.session.defaults.DefaultSqlSessionFactory#openSession()
+     >org.apache.ibatis.session.defaults.DefaultSqlSessionFactory.openSessionFromDataSource 再调用openSessionFromDataSource()方法
+      >org.apache.ibatis.session.ExecutorType 返回efaultExecutorType，先返回执行器的类型，在mybatis中有三种执行器：SIMPLE, REUSE, BATCH，默认是SIMPLE。
+       >org.apache.ibatis.mapping.Environment 通过Environment获取到DataSource，连接到数据库,再获取到事务transaction
+        >org.apache.ibatis.transaction.TransactionFactory.newTransaction(javax.sql.DataSource, org.apache.ibatis.session.TransactionIsolationLevel, boolean) 开启事务
+         >org.apache.ibatis.session.Configuration.newExecutor(org.apache.ibatis.transaction.Transaction, org.apache.ibatis.session.ExecutorType) 获取执行器Executor，通过判断执行器的类型选择默认的SimpleExecutor，还有其他的执行器--缓存执行器
+          >org.apache.ibatis.executor.SimpleExecutor.SimpleExecutor 获取默认的SimpleExecutor执行器
+           >org.apache.ibatis.executor.CachingExecutor 一级缓存执行器它默认的职位true，开启状态   它是一次session会话级别的，
+            >org.apache.ibatis.plugin.InterceptorChain.pluginAll 责任链模式拦截器，它通过循环拦截器，最终执行plugin方法获取目标对象。责任链模式场景：拦截用户非法请求，登录、审批、java异常、下订单：计算订单返利，返利分为不同过程，比如商家，它分为微信端、QQ端、AAP端等都可以用到责任链的模式
+
+4、调用selectOnde方法   操作数据库
+    >org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne(java.lang.String, java.lang.Object)它是一个接口，selectOne方法，DefaultSqlSession中selectList()方法是它的实现类
+      >org.apache.ibatis.session.defaults.DefaultSqlSession.selectList(java.lang.String, java.lang.Object, org.apache.ibatis.session.RowBounds)
+        >org.apache.ibatis.session.Configuration.getMappedStatement(java.lang.String)这里获取的是mapper.xml里面具体的执行方法的id，即能确认唯一的哪个SQl执行语句  相当于<mapper namespace="" + select id="">
+         >org.apache.ibatis.executor.Executor.query(org.apache.ibatis.mapping.MappedStatement, java.lang.Object, org.apache.ibatis.session.RowBounds, org.apache.ibatis.session.ResultHandler)  执行查询
+          ----------------------先查询缓存----------------------------------------------------
+          >org.apache.ibatis.executor.CachingExecutor.query(org.apache.ibatis.mapping.MappedStatement, java.lang.Object, org.apache.ibatis.session.RowBounds, org.apache.ibatis.session.ResultHandler) 缓存查询--- delegate 这里运用到了装饰模式
+          ----------------------绑定sql----------------------------------------------------
+           >org.apache.ibatis.mapping.MappedStatement.getBoundSql  绑定sql语句，获取传入的参数ParameterMappings，通过遍历循环，确定传入的参数,返回绑定的sql
+            >org.apache.ibatis.mapping.SqlSource.getBoundSql   它是接口方法，RawSqlSource、StaticSqlSource类是它的实现类方法
+             >org.apache.ibatis.scripting.defaults.RawSqlSource.getBoundSql   静态SqlSource。它比DynamicSqlSource更快，因为映射是在启动时计算的。???这里的方法重新调用了SqlSource.getBoundSql
+              >org.apache.ibatis.builder.StaticSqlSource.getBoundSql   这里是返回new BoundSql，实际是调用了启动时的映射
+               >org.apache.ibatis.mapping.BoundSql.BoundSql
+                ----------------创建缓存key(cacheKey)----------------------------------------------
+                >org.apache.ibatis.executor.CachingExecutor.createCacheKey 创建缓存的key，组装设置更新key，通过key去数据库查询value值
+                 >org.apache.ibatis.executor.Executor.createCacheKey 接口方法 实现类是BaseExecutor
+                  >org.apache.ibatis.executor.BaseExecutor.createCacheKey 最终返回cacheKey
+                   >org.apache.ibatis.executor.CachingExecutor.query(org.apache.ibatis.mapping.MappedStatement, java.lang.Object, org.apache.ibatis.session.RowBounds, org.apache.ibatis.session.ResultHandler, org.apache.ibatis.cache.CacheKey, org.apache.ibatis.mapping.BoundSql)第一次查询，缓存没有数据，去查询数据库
+                    >org.apache.ibatis.executor.BaseExecutor.query(org.apache.ibatis.mapping.MappedStatement, java.lang.Object, org.apache.ibatis.session.RowBounds, org.apache.ibatis.session.ResultHandler, org.apache.ibatis.cache.CacheKey, org.apache.ibatis.mapping.BoundSql)这里还做了必要的判断，list=resultHandler根据传入的cacheKey判断，去本地缓存查询，还是去数据库查询
+                    -----------去数据库查询结果-----------------------------------------------------
+                     >org.apache.ibatis.executor.BaseExecutor.queryFromDatabase  第一次查询，去数据库查询，然后put到localCache里
+                      >org.apache.ibatis.executor.BaseExecutor.doQuery 它是一个接口方法，它的实现类是SimpleExecutor
+                       >org.apache.ibatis.executor.SimpleExecutor.doQuery
+                        >org.apache.ibatis.executor.statement.RoutingStatementHandler.query
+                         >org.apache.ibatis.executor.statement.PreparedStatementHandler.query  PreparedStatement预编译查询
+                          >java.sql.PreparedStatement.execute
+                           >com.mysql.cj.jdbc.ClientPreparedStatement.execute  检查我们是否缓存了该查询的元数据…    只将max_rows应用于选择
+                            >org.apache.ibatis.logging.jdbc.PreparedStatementLogger.invoke 这个方法判断具体的调用的那个执行方法---这里是executeQuery查询方法
+                             >org.apache.ibatis.executor.resultset.ResultSetHandler.handleResultSets  >org.apache.ibatis.executor.resultset.DefaultResultSetHandler
+                              >org.apache.ibatis.executor.resultset.DefaultResultSetHandler.collapseSingleResultList 折叠单结果列表 输出结果----
+
+testMapper()获取mapper：
+    >org.apache.ibatis.session.defaults.DefaultSqlSession.getMapper
+     >org.apache.ibatis.session.Configuration.getMapper
+      >org.apache.ibatis.binding.MapperRegistry.getMapper  注册
+       >java.util.Map.get 获取mappers的type类型
+        >org.apache.ibatis.binding.MapperProxyFactory  获取mapper代理工厂
+         >org.apache.ibatis.binding.MapperProxyFactory.newInstance(org.apache.ibatis.session.SqlSession)  获取代理的示例对象
+          >java.lang.reflect.Proxy.newProxyInstance   返回代理对象
+           >org.apache.ibatis.binding.MapperProxy.cachedMapperMethod
+            >org.apache.ibatis.binding.MapperMethod.execute  判断具体是insert、select、delete、update操作
+             >org.apache.ibatis.session.SqlSession.selectOne(java.lang.String, java.lang.Object)
+              >以下的调用如selectOne方法的调用
+
+@Select注解的调用流程：
+    >org.apache.ibatis.annotations.Select
+     >org.apache.ibatis.builder.annotation.MapperAnnotationBuilder.MapperAnnotationBuilder
+      >org.apache.ibatis.binding.MapperRegistry.addMapper   构造函数
+       >org.apache.ibatis.builder.annotation.MapperAnnotationBuilder.parse
+        >org.apache.ibatis.builder.annotation.MapperAnnotationBuilder.loadXmlResource  优先级，先解析xml，如果没有，它忽略了报错，继续加载查看是否是注解形式的
+         >org.apache.ibatis.session.Configuration.addMapper
+          >org.apache.ibatis.builder.xml.XMLConfigBuilder.mapperElement  mybatis-config.xml文件中的mapper的四种配置方式的判断
+
+SqlSessionFactoryBuilder----(parse解析)--->Configuration----(build)--->SqlSessionFactory---(openSession)--->SqlSession---(query)--->Executor--->(newStatementHandler)--->statementHandler---(handlerResultSet)--->ResultSetHandler
