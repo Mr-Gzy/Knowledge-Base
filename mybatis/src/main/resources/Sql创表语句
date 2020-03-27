@@ -1,0 +1,16 @@
+#创建数据库
+CREATE DATABASE `yuxin-jdbc`;
+#使用数据库
+USE `yuxin-jdbc`;
+#建表
+CREATE TABLE `user`(
+`id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+`username`VARCHAR(255) NOT NULL COMMENT '用户名',
+`age` INT(11) NOT NULL COMMENT '年龄',
+`phone`BIGINT(20) NOT NULL COMMENT '电话号码',
+`desc`VARCHAR(255) NOT NULL COMMENT '简介',
+PRIMARY KEY (`id`),
+KEY idx_user_name(`username`)
+)ENGINE=INNODB COLLATE=utf8_general_ci AUTO_INCREMENT=1 COMMENT '用户详情表';
+#查看索引
+SHOW INDEX FROM `user`;
