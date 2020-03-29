@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--配置数据源  URL:jdbc:mysql://localhost:3306/mysql?useUnicode=true&characterEncoding=UTF-8-->
+      <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+            init-method="init" destroy-method="close">
+         <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+         <property name="url" value="jdbc:mysql://localhost:3306/yuxin-jdbc?serverTimezone=GMT%2B8"/>
+         <property name="username" value="root"/>
+         <property name="password" value="root"/>
+         <property name="initialSize" value="1"/>
+         <property name="minIdle" value="1"/>
+         <property name="maxActive" value="10"/>
+         <property name="maxWait" value="60000"/>
+         <property name="timeBetweenEvictionRunsMillis" value="50000"/>
+         <property name="minEvictableIdleTimeMillis" value="300000"/>
+         <property name="validationQuery" value="SELECT 'x'"/>
+         <property name="testWhileIdle" value="true"/>
+         <property name="testOnBorrow" value="false"/>
+         <property name="testOnReturn" value="false"/>
+         <property name="poolPreparedStatements" value="true"/>
+         <property name="maxPoolPreparedStatementPerConnectionSize" value="20"/>
+         <property name="filters" value="stat"/>
+      </bean>
+      <!--配置映射器-->
+      <!--方式一，指定具体的单个的-->
+<!--      <bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">-->
+<!--        <property name="mapperInterface" value="org.mybatis.spring.sample.mapper.UserMapper" />-->
+<!--        <property name="sqlSessionFactory" ref="sqlSessionFactory" />-->
+<!--      </bean>-->
+       <!--扫描文件方式二-->
+      <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+            <property name="basePackage" value="com.yuxin.dream.mapper" />
+      </bean>
+
+      <bean id="SqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+          <property name="dataSource" ref="dataSource"/>
+         <!--这里配置了直接扫描的路径，它是基于注解的方式直接查询结果的，不是基于xml的方式，涉及到了加载的优先级，先loadXML，在加载注解-->
+<!--          <property name="mapperLocations" value="classpath*:mybatis/UserMapperTest.xml"/>-->
+      </bean>
+
+      <!--SqlSessionTemplate等同于mybatis中的SqlSession-->
+      <bean id="SqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+          <constructor-arg index="0" ref="SqlSessionFactory"/>
+      </bean>
+
+</beans>
