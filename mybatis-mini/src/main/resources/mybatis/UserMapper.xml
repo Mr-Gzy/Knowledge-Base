@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--namespace当基于XML进行配置的时候是根据namespace + id来拼接，进行SQL操作-->
+<mapper namespace = "UserMapper">
+    <!--select 查询 -->
+    <select id ="getUser" resultType="User">
+        select `id`,`username`,`age`,`phone`,`desc`from user where id = %d
+    </select>
+</mapper>
