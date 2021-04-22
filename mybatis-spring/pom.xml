@@ -15,7 +15,7 @@
         <druid.version>1.1.21</druid.version>
         <mybatis-spring>2.0.4</mybatis-spring>
         <mysql.connector>8.0.15</mysql.connector>
-        <mybatis-version>3.5.4</mybatis-version>
+        <mybatis-version>3.5.6</mybatis-version>
     </properties>
     <!-- https://mvnrepository.com/artifact/com.alibaba/druid-->
     <dependencies>
