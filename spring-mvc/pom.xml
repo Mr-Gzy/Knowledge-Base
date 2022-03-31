@@ -21,7 +21,7 @@
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <commons-fileupload>1.4</commons-fileupload>
     <!--spring框架-->
-    <spring.version>5.2.3.RELEASE</spring.version>
+    <spring.version>5.3.18</spring.version>
     <spring-webmvc-portlet>4.3.26.RELEASE</spring-webmvc-portlet>
     <!-- servlet-api，jsp-api，jstl -->
     <servlet-api.version>2.5</servlet-api.version>
