@@ -18,7 +18,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <!--spring框架-->
-    <spring.version>5.2.3.RELEASE</spring.version>
+    <spring.version>5.3.19</spring.version>
     <spring-webmvc-portlet>4.3.26.RELEASE</spring-webmvc-portlet>
     <!-- servlet-api，jsp-api，jstl -->
     <servlet-api.version>2.5</servlet-api.version>
