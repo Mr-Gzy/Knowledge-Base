@@ -11,7 +11,7 @@
         <!--公共依赖-->
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <!--spring框架-->
-        <spring.version>5.2.3.RELEASE</spring.version>
+        <spring.version>5.2.21.RELEASE</spring.version>
         <!--在idea中用maven打包是发出警告,解决办法-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
